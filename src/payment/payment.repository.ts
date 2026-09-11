@@ -8,7 +8,7 @@ import { PaymentStatus } from '../types/payment.types';
  * memory pressure — if that happens, a payment that's already COMPLETED
  * in the DB must not look "never processed" just because Redis forgot.
  *
- * Swap `InMemoryPaymentRepository` for a real Postgres/Mongo-backed
+ * TODO Swap `InMemoryPaymentRepository` for a real Postgres/Mongo-backed
  * implementation in production; the interface is what the processor
  * depends on.
  */

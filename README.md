@@ -547,7 +547,7 @@ issue" from "our bug" before touching a debugger.
   record — the source of truth for "did this payment happen." The
   reconciliation logic exists specifically because these two stores can
   disagree after a crash, and the DB always wins that disagreement.
-- **Microservices vs monolithic**: for this specific subsystem, a single
+- **Microservices vs monolithic**: for this specific  assesment, a single
   payment-processing service (as implemented here) is preferable to
   splitting queue-management/processing/monitoring into separate services
   — they share fate anyway (a processing failure needs to update metrics
