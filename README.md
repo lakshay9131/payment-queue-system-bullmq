@@ -6,6 +6,9 @@ written answers for the Part 2 architecture discussion.
 # Commands
 docker run -d --name redis-test -p 6379:6379 redis
 
+
+<img width="1915" height="1080" alt="image" src="https://github.com/user-attachments/assets/a30ef557-23dc-4e16-af7e-17cee0d05be6" />
+
 ## Layout
 
 ```
