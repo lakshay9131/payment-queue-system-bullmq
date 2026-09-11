@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2021",
+    "lib": ["ES2021"],
+    "declaration": false,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "outDir": "dist",
+    "sourceMap": true
+  },
+  "include": ["src/**/*.ts"]
+}

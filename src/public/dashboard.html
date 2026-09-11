@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Payment Queue Dashboard</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: #101827;
+      color: #f8fafc;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    #connection {
+      color: #facc15;
+      margin-bottom: 20px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .label {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .value {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1e293b;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #334155;
+      text-align: left;
+    }
+
+    th {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .success {
+      color: #4ade80;
+    }
+
+    .failure {
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <h1>Payment Queue Dashboard</h1>
+  <div id="connection">Connecting...</div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="label">Total Processed</div>
+      <div class="value" id="totalProcessed">0</div>
+    </div>
+    <div class="card">
+      <div class="label">Average TPS</div>
+      <div class="value" id="tps">0</div>
+    </div>
+    <div class="card">
+      <div class="label">Waiting Jobs</div>
+      <div class="value" id="waiting">0</div>
+    </div>
+    <div class="card">
+      <div class="label">Active Jobs</div>
+      <div class="value" id="active">0</div>
+    </div>
+    <div class="card">
+      <div class="label">Failed Jobs</div>
+      <div class="value failure" id="failed">0</div>
+    </div>
+  </div>
+
+  <h2>Gateway Metrics</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Gateway</th>
+        <th>TPS</th>
+        <th>Success Rate</th>
+        <th>P95 Latency</th>
+        <th>P99 Latency</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody id="gatewayRows"></tbody>
+  </table>
+
+  <h2>Queues</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Queue</th>
+        <th>Waiting</th>
+        <th>Active</th>
+        <th>Completed</th>
+        <th>Failed</th>
+        <th>Delayed</th>
+      </tr>
+    </thead>
+    <tbody id="queueRows"></tbody>
+  </table>
+
+  <script>
+    const socket = io('/payments-dashboard');
+
+    socket.on('connect', () => {
+      document.getElementById('connection').textContent = 'Connected';
+      document.getElementById('connection').style.color = '#4ade80';
+    });
+
+    socket.on('disconnect', () => {
+      document.getElementById('connection').textContent = 'Disconnected';
+      document.getElementById('connection').style.color = '#f87171';
+    });
+
+    socket.on('metrics:tick', (payload) => {
+      const gateways = payload.gateways || [];
+      const queues = payload.queues || [];
+
+      document.getElementById('totalProcessed').textContent =
+        gateways.reduce((sum, item) => sum + item.totalProcessed, 0);
+
+      document.getElementById('tps').textContent =
+        gateways.reduce((sum, item) => sum + item.tps, 0).toFixed(2);
+
+      document.getElementById('waiting').textContent =
+        queues.reduce((sum, item) => sum + item.waiting, 0);
+
+      document.getElementById('active').textContent =
+        queues.reduce((sum, item) => sum + item.active, 0);
+
+      document.getElementById('failed').textContent =
+        queues.reduce((sum, item) => sum + item.failed, 0);
+
+      document.getElementById('gatewayRows').innerHTML = gateways.map((item) => `
+        <tr>
+          <td>${item.gatewayId}</td>
+          <td>${item.tps.toFixed(2)}</td>
+          <td class="${item.successRate >= 0.9 ? 'success' : 'failure'}">
+            ${(item.successRate * 100).toFixed(2)}%
+          </td>
+          <td>${item.p95LatencyMs} ms</td>
+          <td>${item.p99LatencyMs} ms</td>
+          <td>${item.totalProcessed}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('queueRows').innerHTML = queues.map((item) => `
+        <tr>
+          <td>${item.queueName}</td>
+          <td>${item.waiting}</td>
+          <td>${item.active}</td>
+          <td>${item.completed}</td>
+          <td>${item.failed}</td>
+          <td>${item.delayed}</td>
+        </tr>
+      `).join('');
+    });
+  </script>
+</body>
+</html>
